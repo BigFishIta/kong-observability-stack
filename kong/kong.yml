@@ -1,0 +1,26 @@
+_format_version: "3.0"
+
+
+services:
+  - name: example-service
+    url: https://httpbin.org
+    routes:
+      - name: example-route
+        paths:
+          - /httpbin
+
+plugins:
+  - name: prometheus
+
+  - name: correlation-id
+    config:
+      header_name: X-Correlation-ID
+      generator: uuid
+      echo_downstream: true
+
+  - name: http-log
+    config:
+      http_endpoint: http://fluent-bit:9880/kong
+      method: POST
+      timeout: 1000
+      keepalive: 1000

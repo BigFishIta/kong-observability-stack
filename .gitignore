@@ -1,0 +1,18 @@
+# Runtime / env
+.env
+
+# Docker volumes
+volumes/
+*.log
+
+# IDE/editor settings
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Node / Python / Go cache (se servono in futuro)
+node_modules/
+__pycache__/
+dist/
+build/
