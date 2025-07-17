@@ -25,6 +25,7 @@ services:
     container_name: prometheus
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml
       - prometheus_data:/prometheus
     ports:
       - "${PROMETHEUS_PORT}:9090"
@@ -58,15 +59,7 @@ services:
     depends_on:
       - loki
 
-  tempo:
-    image: grafana/tempo:latest
-    container_name: tempo
-    ports:
-      - "${TEMPO_PORT}:3200"
-    volumes:
-      - ./tempo/tempo.yaml:/etc/tempo.yaml
-      - tempo_data:/tmp/tempo
-
+  
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: otel-collector
@@ -74,8 +67,27 @@ services:
       - ./otel-collector/config.yaml:/etc/otel/config.yaml
     command: ["--config=/etc/otel/config.yaml"]
 
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/config.yml
+    
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "4317:4317"     # OTLP gRPC endpoint
+      - "4318:4318"
+
+
 volumes:
   prometheus_data:
   grafana_data:
   loki_data:
-  tempo_data:
+  

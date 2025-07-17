@@ -1,0 +1,13 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: 'default'
+
+receivers:
+  - name: 'default'
+    # Esempio: log in stdout (puoi sostituire con Slack, SMTP, Telegram ecc.)
+    webhook_configs:
+      - url: 'http://localhost:5001'   # Simulatore webhook o blackhole
+
+# Altri receiver si possono aggiungere per Slack, Telegram, Email...

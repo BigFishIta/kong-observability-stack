@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  auth-service:
+    build: ./microservices/auth-service
+    container_name: auth-service
+    ports:
+      - "3001:3000"
+    environment:
+      - PORT=3000

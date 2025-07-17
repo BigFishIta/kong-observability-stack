@@ -8,6 +8,13 @@ services:
       - name: example-route
         paths:
           - /httpbin
+      
+  - name: auth-service
+    url: http://auth-service:3000
+    routes:
+      - name: auth-route
+        paths:
+          - /auth
 
 plugins:
   - name: prometheus
@@ -24,3 +31,4 @@ plugins:
       method: POST
       timeout: 1000
       keepalive: 1000
+

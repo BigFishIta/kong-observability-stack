@@ -1,0 +1,11 @@
+groups:
+  - name: kong-alerts
+    rules:
+      - alert: Kong5xxRateHigh
+        expr: rate(kong_http_status{code=~"5.."}[1m]) > 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alto tasso di errori 5xx in Kong"
+          description: "Kong sta rispondendo con molti 5xx"
