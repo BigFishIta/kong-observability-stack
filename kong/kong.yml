@@ -1,5 +1,14 @@
 _format_version: "3.0"
 
+consumers:
+  - username: my-client
+    custom_id: client-001
+
+jwt_secrets:
+  - consumer: my-client
+    key: my-client-key
+    secret: my-very-super-secret-key-1234567890abcdef
+    algorithm: HS256
 
 services:
   - name: example-service
@@ -15,6 +24,9 @@ services:
       - name: auth-route
         paths:
           - /auth
+        plugins:
+          - name: jwt
+            enabled: true
 
 plugins:
   - name: prometheus
@@ -31,4 +43,3 @@ plugins:
       method: POST
       timeout: 1000
       keepalive: 1000
-

@@ -16,3 +16,7 @@ node_modules/
 __pycache__/
 dist/
 build/
+
+# Certificati local-only
+certs/*.key
+certs/*.crt
