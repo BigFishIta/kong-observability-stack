@@ -1,30 +1,24 @@
-## Kong Observability Stack (Docker Compose)
+🚀 Kong Observability Stack (Docker Compose)
+Infrastruttura completa e riutilizzabile per l’osservabilità di Kong Gateway OSS tramite uno stack 100% open source, eseguibile con Docker Compose.
 
-Infrastruttura completa per l'**osservabilità di Kong Gateway OSS** con uno **stack 100% open source**, eseguibile via Docker Compose.
+📦 Componenti inclusi
+Servizio	Porta (default)	Funzione
+Kong Gateway	${KONG_PROXY_PORT}	API Gateway + reverse proxy
+Kong Admin API	${KONG_ADMIN_PORT}	Configurazione e gestione
+Kong Manager	${KONG_MANAGER_PORT}	Interfaccia web GUI
+Prometheus	${PROMETHEUS_PORT}	Raccolta metriche
+Grafana	${GRAFANA_PORT}	Dashboard unificata
+Loki	${LOKI_PORT}	Log strutturati
+Fluent Bit	9880	Log collector da Kong
+OTEL Collector	4317, 4318	Tracing da app e microservizi
+Jaeger	16686	Tracing distribuito (UI + storage)
 
----
+⚡ Avvio rapido
+Clona il repository
 
-## 📦 Componenti inclusi
-
-| Servizio        | Porta (default)          | Funzione                                   |
-|-----------------|--------------------------|--------------------------------------------|
-| Kong            | `${KONG_PROXY_PORT}`     | Proxy (ingresso richieste API)             |
-| Kong Admin API  | `${KONG_ADMIN_PORT}`     | API REST di gestione Kong                  |
-| Kong Manager    | `${KONG_MANAGER_PORT}`   | Interfaccia web GUI                        |
-| Prometheus      | `${PROMETHEUS_PORT}`     | Metriche e monitoring                      |
-| Grafana         | `${GRAFANA_PORT}`        | Dashboard unificata (log, metriche, trace) |
-| Loki            | `${LOKI_PORT}`           | Backend log strutturati                    |
-| Fluent Bit      | `2020`                   | Collector dei log HTTP da Kong             |
-| OTEL Collector  | `4317`, `4318`           | Riceve trace OTLP da app e microservizi    |
-| Jaeger          | `16686`                  | Backend tracing distribuito (UI + storage) |
-
----
-
-## 🚀 Avvio rapido
-
-1. Clona il repository
-
-```bash
+bash
+Copia
+Modifica
 git clone https://github.com/<TUO-USERNAME>/kong-observability-stack.git
 cd kong-observability-stack
 Crea il file .env partendo dal template
@@ -50,74 +44,42 @@ Jaeger UI: http://localhost:16686
 Kong Manager: http://localhost:8002
 
 🧪 Monitoraggio dei microservizi
-I microservizi (NestJS) sono tracciati via OTEL + Jaeger e monitorati da Prometheus.
-Ogni servizio può esporre metriche su /metrics e tracing automatico OTLP.
+I microservizi (es. in NestJS) sono tracciati via OTEL + Jaeger e monitorati tramite Prometheus.
 
-🔒 Sicurezza e CI/CD (in progress)
-Il progetto include già i container base. A breve saranno aggiunti:
+Ogni microservizio può:
 
-Automazioni GitHub Actions
+Esportare metriche su /metrics
 
-Supporto a HTTPS e JWT
+Generare trace OTLP
 
-Dashboard personalizzate provisioning-ready
-
-yaml
-Copia
-Modifica
-
----
-
-## 📁 `.gitignore` consigliato
-
-```gitignore
-# Node.js
-node_modules/
-dist/
-.env
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Docker
-**/.DS_Store
-docker-compose.override.yml
-
-# VSCode
-.vscode/
+Scrivere log in formato JSON per Fluent Bit / Loki
 
 🔐 Sicurezza API: HTTPS + JWT
-L’infrastruttura è già predisposta per gestire connessioni sicure (HTTPS) e autenticazione tramite JWT, usando plugin nativi di Kong Gateway.
-
-✅ HTTPS (locale)
-Kong espone anche una porta HTTPS (8443) configurata con un certificato self-signed, utile in fase di sviluppo e test.
-
-📁 File certificati (self-signed):
-./certs/kong.crt
-
-./certs/kong.key
-
-🔧 I certificati vengono montati nel container Kong e configurati tramite le variabili d’ambiente:
-
-env
-Copia
-Modifica
-KONG_SSL_CERT=/etc/kong/kong.crt  
-KONG_SSL_CERT_KEY=/etc/kong/kong.key
-🔍 Accesso API sicuro:
-Esempio richiesta via HTTPS:
+✅ HTTPS in locale
+Kong è configurato per esporre anche HTTPS sulla porta 8443, con certificati self-signed utili per test locali.
 
 bash
 Copia
 Modifica
 curl -k https://localhost:8443/my-api \
   -H "Host: localhost"
-L'opzione -k serve per ignorare il certificato non verificato (in ambiente dev).
+📁 Certificati:
 
-🔐 JWT Plugin (JSON Web Token)
-Kong è configurato per autenticare automaticamente le richieste API usando token JWT firmati con algoritmo HS256.
+./certs/kong.crt
 
-✍️ Esempio kong.yml:
+./certs/kong.key
+
+Configurati via:
+
+env
+Copia
+Modifica
+KONG_SSL_CERT=/etc/kong/kong.crt  
+KONG_SSL_CERT_KEY=/etc/kong/kong.key
+🔐 Autenticazione con JWT
+Kong protegge le API tramite JWT Plugin. Solo i client che inviano un token valido possono accedere alle rotte protette.
+
+🧱 Esempio in kong.yml:
 yaml
 Copia
 Modifica
@@ -140,14 +102,14 @@ services:
           - /auth
         plugins:
           - name: jwt
-🔐 Come funziona
-Per autenticarsi, il client deve inviare un header HTTP con il token:
+📤 Come funziona:
+Il client invia il token JWT via header:
 
 http
 Copia
 Modifica
-Authorization: Bearer <token_jwt>
-Il token deve essere firmato con secret e includere il campo iss uguale a my-client-key.
+Authorization: Bearer <token>
+Il token deve contenere il campo iss uguale a my-client-key e usare la secret specificata.
 
 🛠 Generazione token (esempio payload):
 json
@@ -156,21 +118,65 @@ Modifica
 {
   "iss": "my-client-key"
 }
-👉 Puoi generare token JWT validi per test locali tramite https://jwt.io oppure script con jsonwebtoken in Node.js.
+Puoi generarlo via:
 
-🧪 Esempio test con curl:
+https://jwt.io
+
+oppure via jsonwebtoken in Node.js
+
+🧪 Test via curl:
 bash
 Copia
 Modifica
 curl -k https://localhost:8443/auth \
   -H "Host: localhost" \
   -H "Authorization: Bearer <TOKEN_GENERATO>"
-Se il token è valido, Kong proxy inoltrerà la richiesta al microservizio.
+Se il token è valido → proxy verso il microservizio.
+Se è assente o errato → 401 Unauthorized.
 
-Se è assente o errato, risponderà con:
+📊 Dashboard Grafana provisioning
+Le dashboard vengono caricate automaticamente da:
 
-arduino
+bash
 Copia
 Modifica
-HTTP/1.1 401 Unauthorized
-{"message":"Unauthorized"}
+grafana/provisioning/dashboards/
+e collegate al datasource Prometheus, configurato in:
+
+bash
+Copia
+Modifica
+grafana/provisioning/datasources/
+🛠 Comandi utili (Makefile)
+bash
+Copia
+Modifica
+make up         # Avvia tutti i container
+make down       # Ferma tutto
+make check      # Controlla salute dei servizi (Kong, Grafana, Prometheus...)
+make logs       # Log di Kong in tempo reale
+📁 .gitignore consigliato
+gitignore
+Copia
+Modifica
+# Node.js
+node_modules/
+dist/
+.env
+
+# Docker
+**/.DS_Store
+docker-compose.override.yml
+
+# VSCode
+.vscode/
+🚧 Work in progress
+Prossimi step (facoltativi ma consigliati):
+
+ CI/CD con GitHub Actions
+
+ Template GitHub per progetti derivati
+
+ Integrazione database (PostgreSQL, MongoDB)
+
+ Supporto a rate limiting, ACL, OAuth2

@@ -1,10 +1,9 @@
 version: '3.8'
-
 services:
   auth-service:
     build: ./microservices/auth-service
     container_name: auth-service
     ports:
-      - "3001:3000"
+      - "3001:3000"         # <- array con stringhe tra virgolette
     environment:
-      - PORT=3000
+      PORT: 3000   
